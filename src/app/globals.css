@@ -14,13 +14,3 @@ a {
   color: inherit;
   text-decoration: none;
 }
-
-
-.leaflet-container {
-  height: 400px;
-  width: 100%;
-}
-
-.leaflet-default-icon-path {
-  background-image: url(https://unpkg.com/leaflet@1.8.0/dist/images/marker-icon.png);
-}
