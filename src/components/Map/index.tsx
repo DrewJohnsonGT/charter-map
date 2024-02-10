@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import ReactMapGL, {
   ViewState,
   MapLayerMouseEvent,
@@ -7,12 +7,15 @@ import ReactMapGL, {
 import { booleanPointInPolygon } from '@turf/turf';
 import MapBoxGL from 'mapbox-gl';
 import { DrawControl } from '~/components/Map/DrawControl';
-import { GEOFENCE, LONGITUDE, LATITUDE } from '~/constants';
+import { GEOFENCE } from '~/constants';
 import { useAppContext, ActionType } from '~/context/useContext';
 import { Feature } from '~/types';
 
 export const Map = () => {
-  const { dispatch } = useAppContext();
+  const {
+    state: { viewState },
+    dispatch,
+  } = useAppContext();
   const onUpdate = useCallback(
     ({ features: newFeatures }: { features: Feature[] }) => {
       dispatch({
@@ -32,20 +35,23 @@ export const Map = () => {
     },
     [dispatch],
   );
-  const [viewState, setViewState] = useState<Partial<ViewState>>({
-    longitude: LONGITUDE,
-    latitude: LATITUDE,
-    zoom: 10,
-  });
 
-  const onMove = useCallback(({ viewState }: { viewState: ViewState }) => {
-    const newCenter = [viewState.longitude, viewState.latitude];
-    if (booleanPointInPolygon(newCenter, GEOFENCE)) {
-      setViewState(viewState);
-    }
-  }, []);
+  const onMove = useCallback(
+    ({ viewState }: { viewState: ViewState }) => {
+      const newCenter = [viewState.longitude, viewState.latitude];
+      if (booleanPointInPolygon(newCenter, GEOFENCE)) {
+        dispatch({
+          type: ActionType.SetViewState,
+          payload: viewState,
+        });
+      }
+    },
+    [dispatch],
+  );
 
-  const handleClick = (_event: MapLayerMouseEvent) => {};
+  const handleClick = (event: MapLayerMouseEvent) => {
+    console.log(event);
+  };
   return (
     <ReactMapGL
       mapLib={MapBoxGL}

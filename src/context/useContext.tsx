@@ -1,9 +1,15 @@
 'use client';
 
 import { useContext, useReducer, createContext } from 'react';
-import { Feature } from '~/types';
+import { LONGITUDE, LATITUDE } from '~/constants';
+import { Feature, ViewState } from '~/types';
 
 const DEFAULT_STATE = {
+  viewState: {
+    longitude: LONGITUDE,
+    latitude: LATITUDE,
+    zoom: 10,
+  },
   features: [] as Feature[],
 };
 
@@ -12,11 +18,13 @@ export type State = typeof DEFAULT_STATE;
 export enum ActionType {
   DrawUpdate = 'DRAW_UPDATE',
   DrawDelete = 'DRAW_DELETE',
+  SetViewState = 'SET_VIEW_STATE',
 }
 
 interface Payloads {
   [ActionType.DrawUpdate]: Feature[];
   [ActionType.DrawDelete]: Feature[];
+  [ActionType.SetViewState]: ViewState;
 }
 export type ActionMap<M extends { [index: string]: any }> = {
   [Key in keyof M]: M[Key] extends undefined
@@ -45,6 +53,12 @@ const reducer = (state: typeof DEFAULT_STATE, action: Actions) => {
         features: state.features.filter(
           (feature) => !action.payload.some((f) => f.id === feature.id),
         ),
+      };
+    }
+    case ActionType.SetViewState: {
+      return {
+        ...state,
+        viewState: action.payload,
       };
     }
     default:

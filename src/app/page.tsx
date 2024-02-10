@@ -6,7 +6,7 @@ import styles from './page.module.css';
 
 export default function Home() {
   const {
-    state: { features },
+    state: { viewState, features },
   } = useAppContext();
   const points = features.filter((feature) => {
     return feature.geometry.type === 'Point';
@@ -14,16 +14,9 @@ export default function Home() {
   return (
     <main className={styles.main}>
       <div className={styles.controls}>
-        <h2>Points</h2>
-        <ul>
-          {points.map((point) => {
-            return (
-              <li key={point.id}>
-                <span>{point.id}</span>
-              </li>
-            );
-          })}
-        </ul>
+        <h2>Number of Points: {points.length}</h2>
+        <h2>View State</h2>
+        <pre>{JSON.stringify(viewState, null, 2)}</pre>
       </div>
       <div className={styles.mapContainer}>
         <Map />
