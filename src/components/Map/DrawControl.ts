@@ -1,17 +1,17 @@
 import type { ControlPosition } from 'react-map-gl';
 import { useControl } from 'react-map-gl';
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
+import { Feature } from '~/types';
 
 type DrawControlProps = ConstructorParameters<typeof MapboxDraw>[0] & {
   position?: ControlPosition;
-  draw: MapboxDraw;
-  onCreate: (evt: { features: object[] }) => void;
-  onUpdate: (evt: { features: object[]; action: string }) => void;
-  onDelete: (evt: { features: object[] }) => void;
+  onCreate: (evt: { features: Feature[] }) => void;
+  onUpdate: (evt: { features: Feature[]; action: string }) => void;
+  onDelete: (evt: { features: Feature[] }) => void;
 };
 
 export const DrawControl = (props: DrawControlProps) => {
-  const draw = useControl<MapboxDraw>(
+  useControl<MapboxDraw>(
     () => new MapboxDraw(props),
     ({ map }) => {
       map.on('draw.create', props.onCreate);
@@ -27,6 +27,5 @@ export const DrawControl = (props: DrawControlProps) => {
       position: props.position,
     },
   );
-  console.log(draw);
   return null;
 };

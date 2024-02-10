@@ -1,63 +1,66 @@
 import React, { useState, useCallback } from 'react';
 import ReactMapGL, {
   ViewState,
-  Marker,
   MapLayerMouseEvent,
   NavigationControl,
-  useMap,
 } from 'react-map-gl';
-import MapboxDraw from '@mapbox/mapbox-gl-draw';
-import { booleanPointInPolygon, circle } from '@turf/turf';
+import { booleanPointInPolygon } from '@turf/turf';
 import MapBoxGL from 'mapbox-gl';
 import { DrawControl } from '~/components/Map/DrawControl';
-
-const LATITUDE = 21.7703;
-const LONGITUDE = -71.9041;
-const GEOFENCE = circle([LONGITUDE, LATITUDE], 50, { units: 'miles' });
-
-const MapControl = () => {
-  const map = useMap();
-  console.log(map);
-  return null;
-};
+import { GEOFENCE, LONGITUDE, LATITUDE } from '~/constants';
+import { useAppContext, ActionType } from '~/context/useContext';
+import { Feature } from '~/types';
 
 export const Map = () => {
-  const draw = new MapboxDraw();
+  const { dispatch } = useAppContext();
+  const onUpdate = useCallback(
+    ({ features: newFeatures }: { features: Feature[] }) => {
+      dispatch({
+        type: ActionType.DrawUpdate,
+        payload: newFeatures,
+      });
+    },
+    [dispatch],
+  );
 
-  const [features, setFeatures] = useState({});
-  const onUpdate = useCallback((e) => {}, []);
-
-  const onDelete = useCallback((e) => {}, []);
+  const onDelete = useCallback(
+    ({ features: deletedFeatures }: { features: Feature[] }) => {
+      dispatch({
+        type: ActionType.DrawDelete,
+        payload: deletedFeatures,
+      });
+    },
+    [dispatch],
+  );
   const [viewState, setViewState] = useState<Partial<ViewState>>({
     longitude: LONGITUDE,
     latitude: LATITUDE,
     zoom: 10,
   });
+
   const onMove = useCallback(({ viewState }: { viewState: ViewState }) => {
     const newCenter = [viewState.longitude, viewState.latitude];
     if (booleanPointInPolygon(newCenter, GEOFENCE)) {
       setViewState(viewState);
     }
   }, []);
-  const handleClick = (event: MapLayerMouseEvent) => {
-    console.log(event.lngLat);
-  };
-  console.log(features);
+
+  const handleClick = (_event: MapLayerMouseEvent) => {};
   return (
     <ReactMapGL
-      {...viewState}
       mapLib={MapBoxGL}
-      onMove={onMove}
       mapStyle="mapbox://styles/mapbox/standard"
       mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_PUBLIC_TOKEN}
       attributionControl={false}
       minZoom={8}
-      reuseMaps
-      onClick={handleClick}>
-      <MapControl />
+      longitude={viewState.longitude}
+      latitude={viewState.latitude}
+      zoom={viewState.zoom}
+      onClick={handleClick}
+      onMove={onMove}
+      reuseMaps>
       <NavigationControl />
       <DrawControl
-        draw={draw}
         position="top-left"
         displayControlsDefault={false}
         controls={{
@@ -70,9 +73,6 @@ export const Map = () => {
         onUpdate={onUpdate}
         onDelete={onDelete}
       />
-      <Marker longitude={LONGITUDE} latitude={LATITUDE}>
-        <div>📍</div>
-      </Marker>
     </ReactMapGL>
   );
 };
