@@ -15,6 +15,8 @@
     "@emotion/styled": "^11.11.0",
     "@mapbox/mapbox-gl-draw": "^1.4.3",
     "@turf/turf": "^7.0.0-alpha.113",
+    "clsx": "^2.1.0",
+    "firebase": "^10.8.0",
     "framer-motion": "^11.0.3",
     "mapbox-gl": "^3.1.2",
     "next": "14.1.0",
@@ -31,6 +33,7 @@
     "@types/react-dom": "^18",
     "eslint": "^8",
     "eslint-config-next": "14.1.0",
+    "eslint-plugin-sort": "^2.11.0",
     "prettier": "^3.2.4",
     "typescript": "^5"
   }

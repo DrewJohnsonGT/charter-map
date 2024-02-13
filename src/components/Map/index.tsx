@@ -1,26 +1,26 @@
 import React, { useCallback } from 'react';
 import ReactMapGL, {
-  ViewState,
   MapLayerMouseEvent,
   NavigationControl,
+  ViewState,
 } from 'react-map-gl';
 import { booleanPointInPolygon } from '@turf/turf';
 import MapBoxGL from 'mapbox-gl';
 import { DrawControl } from '~/components/Map/DrawControl';
 import { GEOFENCE } from '~/constants';
-import { useAppContext, ActionType } from '~/context/useContext';
+import { ActionType, useAppContext } from '~/context/useContext';
 import { Feature } from '~/types';
 
 export const Map = () => {
   const {
-    state: { viewState },
     dispatch,
+    state: { draw, viewState },
   } = useAppContext();
   const onUpdate = useCallback(
     ({ features: newFeatures }: { features: Feature[] }) => {
       dispatch({
-        type: ActionType.DrawUpdate,
         payload: newFeatures,
+        type: ActionType.DrawUpdate,
       });
     },
     [dispatch],
@@ -29,8 +29,8 @@ export const Map = () => {
   const onDelete = useCallback(
     ({ features: deletedFeatures }: { features: Feature[] }) => {
       dispatch({
-        type: ActionType.DrawDelete,
         payload: deletedFeatures,
+        type: ActionType.DrawDelete,
       });
     },
     [dispatch],
@@ -41,17 +41,36 @@ export const Map = () => {
       const newCenter = [viewState.longitude, viewState.latitude];
       if (booleanPointInPolygon(newCenter, GEOFENCE)) {
         dispatch({
-          type: ActionType.SetViewState,
           payload: viewState,
+          type: ActionType.SetViewState,
         });
       }
     },
     [dispatch],
   );
 
+  const handleSetDrawRef = useCallback(
+    (draw: MapboxDraw) => {
+      dispatch({
+        payload: draw,
+        type: ActionType.SetDrawReference,
+      });
+    },
+    [dispatch],
+  );
   const handleClick = (event: MapLayerMouseEvent) => {
-    console.log(event);
+    const featureClicked = draw?.getFeatureIdsAt({
+      x: event.point.x,
+      y: event.point.y,
+    });
+    if (featureClicked) {
+      dispatch({
+        payload: featureClicked,
+        type: ActionType.FeatureSelected,
+      });
+    }
   };
+
   return (
     <ReactMapGL
       mapLib={MapBoxGL}
@@ -68,13 +87,16 @@ export const Map = () => {
       <NavigationControl />
       <DrawControl
         position="top-left"
-        displayControlsDefault={false}
-        controls={{
-          point: true,
-          line_string: true,
-          trash: true,
+        drawProps={{
+          controls: {
+            line_string: true,
+            point: true,
+            trash: true,
+          },
+          defaultMode: 'simple_select',
+          displayControlsDefault: false,
         }}
-        defaultMode="simple_select"
+        handleSetDrawRef={handleSetDrawRef}
         onCreate={onUpdate}
         onUpdate={onUpdate}
         onDelete={onDelete}

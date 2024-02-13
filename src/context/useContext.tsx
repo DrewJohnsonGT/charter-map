@@ -1,16 +1,24 @@
 'use client';
 
-import { useContext, useReducer, createContext } from 'react';
-import { LONGITUDE, LATITUDE } from '~/constants';
+import { createContext, useContext, useReducer } from 'react';
+import MapboxDraw from '@mapbox/mapbox-gl-draw';
+import { LATITUDE, LONGITUDE } from '~/constants';
 import { Feature, ViewState } from '~/types';
 
 const DEFAULT_STATE = {
+  draw: null as MapboxDraw | null,
+  features: [] as Feature[],
+  loading: {
+    drawReference: true,
+    features: true,
+  },
+  selectedFeatureIds: [] as string[],
+  storedFeatures: [] as Feature[],
   viewState: {
-    longitude: LONGITUDE,
     latitude: LATITUDE,
+    longitude: LONGITUDE,
     zoom: 10,
   },
-  features: [] as Feature[],
 };
 
 export type State = typeof DEFAULT_STATE;
@@ -19,12 +27,18 @@ export enum ActionType {
   DrawUpdate = 'DRAW_UPDATE',
   DrawDelete = 'DRAW_DELETE',
   SetViewState = 'SET_VIEW_STATE',
+  SetDrawReference = 'SET_DRAW_REFERENCE',
+  FeatureSelected = 'FEATURE_SELECTED',
+  LoadFeatures = 'LOAD_FEATURES',
 }
 
 interface Payloads {
   [ActionType.DrawUpdate]: Feature[];
   [ActionType.DrawDelete]: Feature[];
   [ActionType.SetViewState]: ViewState;
+  [ActionType.SetDrawReference]: MapboxDraw;
+  [ActionType.FeatureSelected]: string[];
+  [ActionType.LoadFeatures]: Feature[];
 }
 export type ActionMap<M extends { [index: string]: any }> = {
   [Key in keyof M]: M[Key] extends undefined
@@ -59,6 +73,37 @@ const reducer = (state: typeof DEFAULT_STATE, action: Actions) => {
       return {
         ...state,
         viewState: action.payload,
+      };
+    }
+    case ActionType.SetDrawReference: {
+      return {
+        ...state,
+        draw: action.payload,
+        loading: {
+          ...state.loading,
+          drawReference: false,
+        },
+      };
+    }
+    case ActionType.FeatureSelected: {
+      return {
+        ...state,
+        selectedFeatureIds: action.payload,
+      };
+    }
+    case ActionType.LoadFeatures: {
+      if (!state.draw) throw new Error('Draw reference not set');
+      action.payload.forEach((feature) => {
+        state.draw?.add(feature);
+      });
+      return {
+        ...state,
+        features: action.payload,
+        loading: {
+          ...state.loading,
+          features: false,
+        },
+        storedFeatures: action.payload,
       };
     }
     default:
