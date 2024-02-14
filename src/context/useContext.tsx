@@ -30,6 +30,7 @@ export enum ActionType {
   SetDrawReference = 'SET_DRAW_REFERENCE',
   FeatureSelected = 'FEATURE_SELECTED',
   LoadFeatures = 'LOAD_FEATURES',
+  UpdateFeature = 'UPDATE_FEATURE',
 }
 
 interface Payloads {
@@ -39,6 +40,8 @@ interface Payloads {
   [ActionType.SetDrawReference]: MapboxDraw;
   [ActionType.FeatureSelected]: string[];
   [ActionType.LoadFeatures]: Feature[];
+  [ActionType.UpdateFeature]: Pick<Feature, 'id'> &
+    Partial<Omit<Feature, 'id'>>;
 }
 export type ActionMap<M extends { [index: string]: any }> = {
   [Key in keyof M]: M[Key] extends undefined
@@ -54,11 +57,21 @@ export type ActionMap<M extends { [index: string]: any }> = {
 export type Actions = ActionMap<Payloads>[keyof ActionMap<Payloads>];
 
 const reducer = (state: typeof DEFAULT_STATE, action: Actions) => {
+  console.log('action', action);
   switch (action.type) {
     case ActionType.DrawUpdate: {
+      const updatedFeatures = state.features.map((feature) => {
+        const featureUpdate = action.payload.find((f) => f.id === feature.id);
+        return featureUpdate ? { ...feature, ...featureUpdate } : feature;
+      });
+      const newFeatures = action.payload.filter(
+        (newFeature) =>
+          !state.features.some((feature) => feature.id === newFeature.id),
+      );
+      const finalFeatures = [...updatedFeatures, ...newFeatures];
       return {
         ...state,
-        features: [...state.features, ...action.payload],
+        features: [...finalFeatures],
       };
     }
     case ActionType.DrawDelete: {
@@ -86,6 +99,10 @@ const reducer = (state: typeof DEFAULT_STATE, action: Actions) => {
       };
     }
     case ActionType.FeatureSelected: {
+      if (!state.draw) throw new Error('Draw reference not set');
+      state.draw?.changeMode('simple_select', {
+        featureIds: action.payload,
+      });
       return {
         ...state,
         selectedFeatureIds: action.payload,
@@ -104,6 +121,18 @@ const reducer = (state: typeof DEFAULT_STATE, action: Actions) => {
           features: false,
         },
         storedFeatures: action.payload,
+      };
+    }
+    case ActionType.UpdateFeature: {
+      const updatedFeatures = state.features.map((feature) => {
+        if (feature.id === action.payload.id) {
+          return { ...feature, ...action.payload };
+        }
+        return feature;
+      });
+      return {
+        ...state,
+        features: updatedFeatures,
       };
     }
     default:

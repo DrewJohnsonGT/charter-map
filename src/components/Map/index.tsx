@@ -1,17 +1,19 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useRef } from 'react';
 import ReactMapGL, {
   MapLayerMouseEvent,
+  MapRef,
   NavigationControl,
   ViewState,
 } from 'react-map-gl';
 import { booleanPointInPolygon } from '@turf/turf';
 import MapBoxGL from 'mapbox-gl';
 import { DrawControl } from '~/components/Map/DrawControl';
-import { GEOFENCE } from '~/constants';
+import { FLY_TO_CURVE, GEOFENCE } from '~/constants';
 import { ActionType, useAppContext } from '~/context/useContext';
 import { Feature } from '~/types';
 
 export const Map = () => {
+  const mapRef = useRef<MapRef | null>(null);
   const {
     dispatch,
     state: { draw, viewState },
@@ -68,11 +70,17 @@ export const Map = () => {
         payload: featureClicked,
         type: ActionType.FeatureSelected,
       });
+      mapRef.current?.flyTo({
+        center: event.lngLat,
+        curve: FLY_TO_CURVE,
+        duration: 1000,
+      });
     }
   };
 
   return (
     <ReactMapGL
+      ref={mapRef}
       mapLib={MapBoxGL}
       mapStyle="mapbox://styles/mapbox/standard"
       mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_PUBLIC_TOKEN}

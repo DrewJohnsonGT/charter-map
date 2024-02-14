@@ -17,21 +17,26 @@ export const getAllFeatures = async () => {
   const featuresRef = collection(db, FEATURE_COLLECTION);
   const querySnapshot = await getDocs(featuresRef);
   querySnapshot.forEach((doc) => {
-    const featureData = doc.data() as { feature: string };
+    const featureData = doc.data() as { feature: string; name: string };
     const parsedFeature = JSON.parse(featureData.feature);
     features.push({
       ...parsedFeature,
       id: doc.id,
+      name: featureData.name,
     });
   });
   return features;
 };
 
-export const setFeature = async ({ id, ...newFeature }: Feature) => {
+export const setFeature = async ({ id, name = '', ...newFeature }: Feature) => {
   const featureRef = doc(db, FEATURE_COLLECTION, String(id));
   const serializedFeature = JSON.stringify(newFeature);
   try {
-    await setDoc(featureRef, { feature: serializedFeature }, { merge: true });
+    await setDoc(
+      featureRef,
+      { feature: serializedFeature, name },
+      { merge: true },
+    );
   } catch (error) {
     console.error('Error updating feature: ', error);
   }

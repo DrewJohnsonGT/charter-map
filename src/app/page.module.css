@@ -11,6 +11,7 @@
   align-items: center;
   padding: 1rem;
   gap: 1rem;
+  height: 400px;
 }
 
 .mapContainer {
@@ -18,10 +19,17 @@
   height: 100%;
 }
 
+.lines,
+.points {
+  flex: 1;
+  overflow-y: auto;
+}
+
 .feature {
-  border: 1px solid transparent;
+  border: 2px solid transparent;
+  border-radius: 8px;
 }
 
 .selectedFeature {
-  border: 1px solid red;
+  border: 2px solid #007bff;
 }
