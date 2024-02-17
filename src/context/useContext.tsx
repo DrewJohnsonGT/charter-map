@@ -1,6 +1,13 @@
 'use client';
 
-import { createContext, useContext, useReducer } from 'react';
+import {
+  createContext,
+  RefObject,
+  useContext,
+  useReducer,
+  useRef,
+} from 'react';
+import { MapRef } from 'react-map-gl';
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import { LATITUDE, LONGITUDE } from '~/constants';
 import { Feature, ViewState } from '~/types';
@@ -12,6 +19,7 @@ const DEFAULT_STATE = {
     drawReference: true,
     features: true,
   },
+  mapRef: { current: null } as RefObject<MapRef>,
   selectedFeatureIds: [] as string[],
   storedFeatures: [] as Feature[],
   viewState: {
@@ -153,7 +161,8 @@ export const AppContextProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const [state, dispatch] = useReducer(reducer, DEFAULT_STATE);
+  const mapRef = useRef<MapRef>(null);
+  const [state, dispatch] = useReducer(reducer, { ...DEFAULT_STATE, mapRef });
 
   return (
     <AppContext.Provider value={{ dispatch, state }}>

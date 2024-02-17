@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Button, Heading, List, ListItem, useToast } from '@chakra-ui/react';
+import { center } from '@turf/turf';
 import clsx from 'clsx';
 import isEqual from 'lodash.isequal';
 import { EditableLabel } from '~/components/EditableLabel';
@@ -17,12 +18,15 @@ export default function Home() {
   const {
     dispatch,
     state: {
+      draw,
       features,
       loading: { drawReference: drawReferenceLoading },
+      mapRef,
       selectedFeatureIds,
       storedFeatures,
     },
   } = useAppContext();
+
   useEffect(() => {
     if (drawReferenceLoading) return;
     getAllFeatures().then((features) => {
@@ -47,6 +51,19 @@ export default function Home() {
       payload: [String(id)],
       type: ActionType.FeatureSelected,
     });
+    const featureClicked = draw?.get(String(id));
+    if (featureClicked?.geometry) {
+      const centerOfClickedFeature = center(featureClicked?.geometry);
+      const centerCoords = centerOfClickedFeature.geometry.coordinates;
+      mapRef?.current?.flyTo({
+        center: {
+          lat: centerCoords[1],
+          lng: centerCoords[0],
+        },
+        duration: 1000,
+        essential: true,
+      });
+    }
   };
 
   const handleSave = async () => {

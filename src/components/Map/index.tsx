@@ -1,7 +1,6 @@
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback } from 'react';
 import ReactMapGL, {
   MapLayerMouseEvent,
-  MapRef,
   NavigationControl,
   ViewState,
 } from 'react-map-gl';
@@ -13,10 +12,9 @@ import { ActionType, useAppContext } from '~/context/useContext';
 import { Feature } from '~/types';
 
 export const Map = () => {
-  const mapRef = useRef<MapRef | null>(null);
   const {
     dispatch,
-    state: { draw, viewState },
+    state: { draw, mapRef, viewState },
   } = useAppContext();
   const onUpdate = useCallback(
     ({ features: newFeatures }: { features: Feature[] }) => {
@@ -65,12 +63,12 @@ export const Map = () => {
       x: event.point.x,
       y: event.point.y,
     });
-    if (featureClicked) {
+    if (featureClicked?.length) {
       dispatch({
         payload: featureClicked,
         type: ActionType.FeatureSelected,
       });
-      mapRef.current?.flyTo({
+      mapRef?.current?.flyTo({
         center: event.lngLat,
         curve: FLY_TO_CURVE,
         duration: 1000,
