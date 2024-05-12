@@ -1,10 +1,11 @@
-## Getting Started
+## Interactive Map Utility
 
-First, run the development server:
+Interactive map utility using `Mapbox` and `@mapbox/mapbox-gl-draw` that allows
+creating and editing points and routes on a map with bidirectional state between
+map elements and their corresponding point/route elements rendering in the DOM.
 
-```bash
+![Screenshot](assets/screenshot1.png)
 
-```
+Live demo: [https://charter-map.vercel.app/](https://charter-map.vercel.app/)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the
-result.
+![Recording](assets/recording1.gif)
