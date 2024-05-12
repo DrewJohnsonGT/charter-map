@@ -58,6 +58,7 @@ export const Map = () => {
     },
     [dispatch],
   );
+
   const handleClick = (event: MapLayerMouseEvent) => {
     const featureClicked = draw?.getFeatureIdsAt({
       x: event.point.x,
