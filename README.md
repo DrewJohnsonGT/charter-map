@@ -6,6 +6,5 @@ map elements and their corresponding point/route elements rendering in the DOM.
 
 ![Screenshot](assets/screenshot1.png)
 
-Live demo: [https://charter-map.vercel.app/](https://charter-map.vercel.app/)
 
 ![Recording](assets/recording1.gif)
