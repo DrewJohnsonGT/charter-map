@@ -1,4 +1,4 @@
-## Interactive Map Utility
+## Interactive Map Utility (POC)
 
 Interactive map utility using `Mapbox` and `@mapbox/mapbox-gl-draw` that allows
 creating and editing points and routes on a map with bidirectional state between
